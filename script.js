@@ -2,25 +2,47 @@ document.addEventListener('DOMContentLoaded', function () {
   const addButton = document.getElementById('addButton');
   addButton.addEventListener('click', addWish);
 
+  const wishList = document.getElementById('wishList');
+  const localStorageKey = 'wishes';
+
+  // Отримання даних з локального сховища при завантаженні сторінки
+  const savedWishes = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+
+  // Заповнення списку бажань
+  savedWishes.forEach(function (wish) {
+    renderWish(wish);
+  });
+
   function addWish() {
     const input = document.getElementById('wishInput');
-    const wishList = document.getElementById('wishList');
 
     if (input.value.trim() !== '') {
-      const li = document.createElement('li');
-      li.innerHTML = `${input.value} <button class="removeButton">Видалити</button>`;
-      wishList.appendChild(li);
-      input.value = '';
+      const newWish = { text: input.value, id: Date.now() };
+      renderWish(newWish);
 
-      // Додаємо обробник події для видалення бажання
-      const removeButton = li.querySelector('.removeButton');
-      removeButton.addEventListener('click', function () {
-        wishList.removeChild(li);
-      });
+      // Оновлення даних у локальному сховищі
+      const existingWishes = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+      const updatedWishes = [...existingWishes, newWish];
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedWishes));
+
+      input.value = '';
     }
   }
-  var tooltipTriggerList = Array.prototype.slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
+
+  function renderWish(wish) {
+    const li = document.createElement('li');
+    li.innerHTML = `${wish.text} <button class="removeButton">Видалити</button>`;
+    wishList.appendChild(li);
+
+    // Додаємо обробник події для видалення бажання
+    const removeButton = li.querySelector('.removeButton');
+    removeButton.addEventListener('click', function () {
+      wishList.removeChild(li);
+
+      // Оновлення даних у локальному сховищі
+      const existingWishes = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+      const updatedWishes = existingWishes.filter(existingWish => existingWish.id !== wish.id);
+      localStorage.setItem(localStorageKey, JSON.stringify(updatedWishes));
+    });
+  }
 });
